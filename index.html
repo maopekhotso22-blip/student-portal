@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-6 font-sans">
+
+  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8">
+    <header class="mb-6 text-center">
+      <h1 class="text-2xl font-bold tracking-tight text-indigo-400">Student Portal</h1>
+      <p class="text-sm text-slate-400 mt-1">Enter student name and marks below</p>
+    </header>
+
+    <!-- Form -->
+    <form id="studentForm" class="space-y-4">
+      <div>
+        <label for="studentName" class="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Student Name</label>
+        <input 
+          type="text" 
+          id="studentName" 
+          required 
+          placeholder="e.g., Jane Doe"
+          class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+        >
+      </div>
+
+      <div>
+        <label for="studentMarks" class="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Marks (%)</label>
+        <input 
+          type="number" 
+          id="studentMarks" 
+          required 
+          min="0" 
+          max="100" 
+          placeholder="e.g., 85"
+          class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+        >
+      </div>
+
+      <button 
+        type="submit" 
+        id="submitBtn"
+        class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg transition shadow-lg shadow-indigo-600/25 cursor-pointer mt-2"
+      >
+        Add Student Record
+      </button>
+    </form>
+  </div>
+
+  <!-- JavaScript to send data to your server.js / MySQL database -->
+  <script>
+    const form = document.getElementById('studentForm');
+    const studentNameInput = document.getElementById('studentName');
+    const studentMarksInput = document.getElementById('studentMarks');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const name = studentNameInput.value.trim();
+      const marks = studentMarksInput.value;
+
+      if (!name || marks === '') return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+
+      try {
+        const response = await fetch('http://localhost:3000/api/marks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, marks: Number(marks) })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to save');
+        }
+
+        alert('Saved successfully!');
+        
+        // Reset form inputs
+        studentNameInput.value = '';
+        studentMarksInput.value = '';
+        studentNameInput.focus();
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error connecting to server. Make sure server.js is running!');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Student Record';
+      }
+    });
+  </script>
+
+</body>
+</html>
